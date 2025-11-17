@@ -29,8 +29,9 @@ export default function Login() {
       const errorMessage = error.response?.data?.message || 'Login failed';
       toast.error(errorMessage);
 
-      // ✅ Jodi error-ti "Account not verified" hoy
-      if (errorMessage.includes('Account not verified')) {
+      // ✅ (পরিবর্তিত লাইন)
+      // "Account not verified" এর বদলে 'not verified' লেখাটি চেক করা হচ্ছে
+      if (errorMessage.toLowerCase().includes('not verified')) {
         // User-ke email-shoho Register page-e pathiye din
         navigate('/register', { state: { email: email } });
       }
