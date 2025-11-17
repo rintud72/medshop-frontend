@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // ✅ navigate import kora ache
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,16 +25,18 @@ export default function Login() {
       toast.success('Login successful!');
       navigate('/');
     } catch (error: any) {
-      // ✅ Shomadhan shuru
+      // ✅ Shomadhan shuru: Notun error handling logic
       const errorMessage = error.response?.data?.message || 'Login failed';
-      toast.error(errorMessage);
+      toast.error(errorMessage); // Backend theke asha message-ti dekhano
 
-      // ✅ (পরিবর্তিত লাইন)
-      // "Account not verified" এর বদলে 'not verified' লেখাটি চেক করা হচ্ছে
-      if (errorMessage.toLowerCase().includes('not verified')) {
+      // ✅ নতুন পরিবর্তন:
+      // যদি মেসেজে "register" কথাটি থাকে (যেমন: "User not registered...")
+      // তাহলেই ইউজারকে রেজিস্টার পেজে পাঠানো হবে
+      if (errorMessage.toLowerCase().includes('register')) {
         // User-ke email-shoho Register page-e pathiye din
         navigate('/register', { state: { email: email } });
       }
+      
       // ✅ Shomadhan shesh
 
     } finally {
@@ -73,7 +75,7 @@ export default function Login() {
                   type={showPassword ? "text" : "password"} 
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.g.et.value)}
                   required
                 />
                 <Button 

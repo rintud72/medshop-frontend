@@ -55,9 +55,9 @@ export default function Register() {
       await verifyOtp(email, otp);
       toast.success('Account verified! Please login to continue.'); 
       navigate('/login'); 
-    } catch (error: any) { // ✅ এই লাইনে একটি ব্র্যাকেট কম ছিল, আমি যোগ করে দিয়েছি
+    } catch (error: any) { // ✅✅✅ সমাধান: এই ব্র্যাকেট-টি এখানে যোগ করা হয়েছে
       toast.error(error.response?.data?.message || 'OTP verification failed');
-    } finally {
+    } finally { // ✅✅✅
       setIsLoading(false);
     }
   };
@@ -143,7 +143,7 @@ export default function Register() {
               </Button>
             </form>
           ) : (
-            // ✅ পরিবর্তন: ভেরিফাই ফর্ম
+            // ✅ ভেরিফাই ফর্ম
             <form onSubmit={handleVerifyOtp} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="otp">OTP Code</Label>
@@ -160,7 +160,7 @@ export default function Register() {
                 {isLoading ? 'Verifying...' : 'Verify OTP'}
               </Button>
 
-              {/* ✅ নতুন বাটন গ্রুপ (Resend OTP এখানেই আছে) */}
+              {/* ✅ বাটন গ্রুপ (এখন এটি ফর্মের ভেতরে থাকবে) */}
               <div className="flex gap-2">
                 <Button
                   type="button"
