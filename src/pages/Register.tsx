@@ -162,27 +162,29 @@ export default function Register() {
 
               {/* ✅ বাটন গ্রুপ (এখন এটি ফর্মের ভেতরেই থাকবে) */}
               <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full"
-                  onClick={() => {
-                    setStep('register');
-                    navigate('/register', { replace: true, state: {} }); // State clear করা হলো
-                  }}
-                >
-                  Back
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleResendOtp}
-                  disabled={isResending}
-                >
-                  {isResending ? 'Sending...' : 'Resend OTP'}
-                </Button>
-              </div>
+  <Button
+    type="button"
+    variant="ghost"
+    className="flex-1"
+    onClick={() => {
+      setStep('register');
+      navigate('/register', { replace: true, state: {} });
+    }}
+  >
+    Back
+  </Button>
+
+  <Button
+    type="button"
+    variant="outline"
+    className="flex-1"
+    onClick={handleResendOtp}
+    disabled={isResending}
+  >
+    {isResending ? 'Sending...' : 'Resend OTP'}
+  </Button>
+</div>
+
             </form>
           )}
 
