@@ -75,7 +75,8 @@ export default function Login() {
                   type={showPassword ? "text" : "password"} 
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.g.et.value)}
+                  // ✅✅✅ সমাধান: e.g.et.value কে e.target.value করা হলো
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
                 <Button 

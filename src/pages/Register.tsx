@@ -55,7 +55,7 @@ export default function Register() {
       await verifyOtp(email, otp);
       toast.success('Account verified! Please login to continue.'); 
       navigate('/login'); 
-    } catch (error: any) { // ✅✅✅ সমাধান: এই ব্র্যাকেট-টি এখানে যোগ করা হয়েছে
+    } catch (error: any) { // ✅✅✅ এই ব্র্যাকেটটি এখানে ঠিক করা আছে
       toast.error(error.response?.data?.message || 'OTP verification failed');
     } finally { // ✅✅✅
       setIsLoading(false);
@@ -67,7 +67,6 @@ export default function Register() {
     setIsResending(true);
     try {
       // ব্যাকএন্ড এখন ঠিক, তাই register ফাংশন কল করলেই নতুন OTP আসবে
-      // লগইন থেকে আসা ইউজারদের name/password না দিলেও চলবে
       await register(name, email, password);
       toast.success('New OTP sent to your email!');
     } catch (error: any) {
@@ -94,6 +93,7 @@ export default function Register() {
         <CardContent>
           {step === 'register' ? (
             <form onSubmit={handleRegister} className="space-y-4">
+              {/* রেজিস্ট্রেশন ফর্ম ... */}
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
                 <Input
@@ -160,7 +160,7 @@ export default function Register() {
                 {isLoading ? 'Verifying...' : 'Verify OTP'}
               </Button>
 
-              {/* ✅ বাটন গ্রুপ (এখন এটি ফর্মের ভেতরে থাকবে) */}
+              {/* ✅ বাটন গ্রুপ (এখন এটি ফর্মের ভেতরেই থাকবে) */}
               <div className="flex gap-2">
                 <Button
                   type="button"
