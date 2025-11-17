@@ -20,11 +20,9 @@ export default function Register() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // রিসেন্ড বাটনের লোডিং এর জন্য
   const [isResending, setIsResending] = useState(false);
 
   useEffect(() => {
-    // লগইন পেজ থেকে রিডাইরেক্ট হয়ে আসলে
     if (location.state?.email) {
       setEmail(location.state.email);
       setStep('verify');
@@ -53,20 +51,18 @@ export default function Register() {
 
     try {
       await verifyOtp(email, otp);
-      toast.success('Account verified! Please login to continue.'); 
+      toast.success('Account verified! Please login.');
       navigate('/login'); 
-    } catch (error: any) { // ✅✅✅ এই ব্র্যাকেটটি এখানে ঠিক করা আছে
+    } catch (error: any) {
       toast.error(error.response?.data?.message || 'OTP verification failed');
-    } finally { // ✅✅✅
+    } finally {
       setIsLoading(false);
     }
   };
 
-  // ✅ নতুন ফাংশন: OTP রিসেন্ড করার জন্য
   const handleResendOtp = async () => {
     setIsResending(true);
     try {
-      // ব্যাকএন্ড এখন ঠিক, তাই register ফাংশন কল করলেই নতুন OTP আসবে
       await register(name, email, password);
       toast.success('New OTP sent to your email!');
     } catch (error: any) {
@@ -90,10 +86,11 @@ export default function Register() {
               : `Enter the OTP sent to ${email}`}
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           {step === 'register' ? (
             <form onSubmit={handleRegister} className="space-y-4">
-              {/* রেজিস্ট্রেশন ফর্ম ... */}
+
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
                 <Input
@@ -104,6 +101,7 @@ export default function Register() {
                   required
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -115,6 +113,7 @@ export default function Register() {
                   required
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
@@ -138,13 +137,15 @@ export default function Register() {
                   </Button>
                 </div>
               </div>
+
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? 'Creating account...' : 'Sign Up'}
               </Button>
+
             </form>
           ) : (
-            // ✅ ভেরিফাই ফর্ম
             <form onSubmit={handleVerifyOtp} className="space-y-4">
+
               <div className="space-y-2">
                 <Label htmlFor="otp">OTP Code</Label>
                 <Input
@@ -156,34 +157,37 @@ export default function Register() {
                   maxLength={6}
                 />
               </div>
+
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? 'Verifying...' : 'Verify OTP'}
               </Button>
 
-              {/* ✅ বাটন গ্রুপ (এখন এটি ফর্মের ভেতরেই থাকবে) */}
-              <div className="flex gap-2">
-  <Button
-    type="button"
-    variant="ghost"
-    className="flex-1"
-    onClick={() => {
-      setStep('register');
-      navigate('/register', { replace: true, state: {} });
-    }}
-  >
-    Back
-  </Button>
+              {/* UPDATED BUTTON AREA */}
+              <div className="space-y-2">
 
-  <Button
-    type="button"
-    variant="outline"
-    className="flex-1"
-    onClick={handleResendOtp}
-    disabled={isResending}
-  >
-    {isResending ? 'Sending...' : 'Resend OTP'}
-  </Button>
-</div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleResendOtp}
+                  disabled={isResending}
+                >
+                  {isResending ? 'Sending...' : 'Resend OTP'}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full"
+                  onClick={() => {
+                    setStep('register');
+                    navigate('/register', { replace: true, state: {} });
+                  }}
+                >
+                  Back
+                </Button>
+
+              </div>
 
             </form>
           )}
