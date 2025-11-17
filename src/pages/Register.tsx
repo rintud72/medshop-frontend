@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react'; // ✅ useEffect ইম্পোর্ট করুন
+import { Link, useNavigate, useLocation } from 'react-router-dom'; // ✅ useLocation ইম্পোর্ট করুন
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Eye, EyeOff } from 'lucide-react'; // ✅ আইকন ইম্পোর্ট
+import { Eye, EyeOff } from 'lucide-react'; 
 
 export default function Register() {
   const [step, setStep] = useState<'register' | 'verify'>('register');
@@ -15,9 +15,22 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // ✅ নতুন স্টেট
+  const [showPassword, setShowPassword] = useState(false); 
   const { register, verifyOtp } = useAuth();
   const navigate = useNavigate();
+  
+  // ✅ Shomadhan shuru: Login page theke pathano state check kora
+  const location = useLocation();
+
+  useEffect(() => {
+    // Jodi Login page kono email state-e pathay
+    if (location.state?.email) {
+      setEmail(location.state.email); // Email field-ti set korun
+      setStep('verify'); // Shorashori verify step-e chole jaan
+    }
+  }, [location.state]); // location.state poriborton holei eta cholbe
+  // ✅ Shomadhan shesh
+
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -40,8 +53,8 @@ export default function Register() {
 
     try {
       await verifyOtp(email, otp);
-      toast.success('Account verified! Please login to continue.'); // আপনি এটি আগেই ঠিক করেছিলেন
-      navigate('/login'); // আপনি এটি আগেই ঠিক করেছিলেন
+      toast.success('Account verified! Please login to continue.'); 
+      navigate('/login'); 
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'OTP verification failed');
     } finally {
@@ -59,7 +72,7 @@ export default function Register() {
           <CardDescription className="body-small">
             {step === 'register'
               ? 'Enter your details to create your account'
-              : 'Enter the OTP sent to your email'}
+              : `Enter the OTP sent to ${email}`} {/* ✅ Email-ti ekhane dekhano holo */}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -86,13 +99,12 @@ export default function Register() {
                   required
                 />
               </div>
-              {/* ✅ পাসওয়ার্ড ফিল্ড আপডেট করা হলো */}
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
                   <Input
                     id="password"
-                    type={showPassword ? "text" : "password"} // ✅ টাইপ পরিবর্তন
+                    type={showPassword ? "text" : "password"} 
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -104,7 +116,7 @@ export default function Register() {
                     variant="ghost" 
                     size="icon" 
                     className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                    onClick={() => setShowPassword((prev) => !prev)} // ✅ টগল বাটন
+                    onClick={() => setShowPassword((prev) => !prev)} 
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </Button>
@@ -134,7 +146,10 @@ export default function Register() {
                 type="button"
                 variant="ghost"
                 className="w-full"
-                onClick={() => setStep('register')}
+                onClick={() => {
+                  setStep('register');
+                  navigate('/register', { replace: true, state: {} }); // ✅ State clear kora holo
+                }}
               >
                 Back to registration
               </Button>

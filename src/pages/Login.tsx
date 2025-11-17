@@ -1,18 +1,18 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // ✅ navigate import kora ache
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Eye, EyeOff } from 'lucide-react'; // ✅ আইকন ইম্পোর্ট
+import { Eye, EyeOff } from 'lucide-react'; 
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // ✅ নতুন স্টেট
+  const [showPassword, setShowPassword] = useState(false); 
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -25,7 +25,17 @@ export default function Login() {
       toast.success('Login successful!');
       navigate('/');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Login failed');
+      // ✅ Shomadhan shuru
+      const errorMessage = error.response?.data?.message || 'Login failed';
+      toast.error(errorMessage);
+
+      // ✅ Jodi error-ti "Account not verified" hoy
+      if (errorMessage.includes('Account not verified')) {
+        // User-ke email-shoho Register page-e pathiye din
+        navigate('/register', { state: { email: email } });
+      }
+      // ✅ Shomadhan shesh
+
     } finally {
       setIsLoading(false);
     }
@@ -53,13 +63,13 @@ export default function Login() {
                 required
               />
             </div>
-            {/* ✅ পাসওয়ার্ড ফিল্ড আপডেট করা হলো */}
+            {/* পাসওয়ার্ড ফিল্ড (Password field) */}
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
-                  type={showPassword ? "text" : "password"} // ✅ টাইপ পরিবর্তন
+                  type={showPassword ? "text" : "password"} 
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -70,7 +80,7 @@ export default function Login() {
                   variant="ghost" 
                   size="icon" 
                   className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                  onClick={() => setShowPassword((prev) => !prev)} // ✅ টগল বাটন
+                  onClick={() => setShowPassword((prev) => !prev)} 
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
