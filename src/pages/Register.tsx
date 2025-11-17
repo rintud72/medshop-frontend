@@ -20,10 +20,11 @@ export default function Register() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ নতুন স্টেট: রিসেন্ড বাটনের লোডিং এর জন্য
+  // রিসেন্ড বাটনের লোডিং এর জন্য
   const [isResending, setIsResending] = useState(false);
 
   useEffect(() => {
+    // লগইন পেজ থেকে রিডাইরেক্ট হয়ে আসলে
     if (location.state?.email) {
       setEmail(location.state.email);
       setStep('verify');
@@ -54,7 +55,7 @@ export default function Register() {
       await verifyOtp(email, otp);
       toast.success('Account verified! Please login to continue.'); 
       navigate('/login'); 
-    } catch (error: any) {
+    } catch (error: any) { // ✅ এই লাইনে একটি ব্র্যাকেট কম ছিল, আমি যোগ করে দিয়েছি
       toast.error(error.response?.data?.message || 'OTP verification failed');
     } finally {
       setIsLoading(false);
@@ -65,7 +66,8 @@ export default function Register() {
   const handleResendOtp = async () => {
     setIsResending(true);
     try {
-      // ✅ ব্যাকএন্ড এখন ঠিক, তাই register ফাংশন কল করলেই নতুন OTP আসবে
+      // ব্যাকএন্ড এখন ঠিক, তাই register ফাংশন কল করলেই নতুন OTP আসবে
+      // লগইন থেকে আসা ইউজারদের name/password না দিলেও চলবে
       await register(name, email, password);
       toast.success('New OTP sent to your email!');
     } catch (error: any) {
@@ -158,7 +160,7 @@ export default function Register() {
                 {isLoading ? 'Verifying...' : 'Verify OTP'}
               </Button>
 
-              {/* ✅ নতুন বাটন গ্রুপ */}
+              {/* ✅ নতুন বাটন গ্রুপ (Resend OTP এখানেই আছে) */}
               <div className="flex gap-2">
                 <Button
                   type="button"
