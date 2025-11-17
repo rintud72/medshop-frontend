@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'; // ✅ useEffect ইম্পোর্ট করুন
-import { Link, useNavigate, useLocation } from 'react-router-dom'; // ✅ useLocation ইম্পোর্ট করুন
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,18 +18,17 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false); 
   const { register, verifyOtp } = useAuth();
   const navigate = useNavigate();
-  
-  // ✅ Shomadhan shuru: Login page theke pathano state check kora
   const location = useLocation();
 
+  // ✅ নতুন স্টেট: রিসেন্ড বাটনের লোডিং এর জন্য
+  const [isResending, setIsResending] = useState(false);
+
   useEffect(() => {
-    // Jodi Login page kono email state-e pathay
     if (location.state?.email) {
-      setEmail(location.state.email); // Email field-ti set korun
-      setStep('verify'); // Shorashori verify step-e chole jaan
+      setEmail(location.state.email);
+      setStep('verify');
     }
-  }, [location.state]); // location.state poriborton holei eta cholbe
-  // ✅ Shomadhan shesh
+  }, [location.state]);
 
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -62,6 +61,21 @@ export default function Register() {
     }
   };
 
+  // ✅ নতুন ফাংশন: OTP রিসেন্ড করার জন্য
+  const handleResendOtp = async () => {
+    setIsResending(true);
+    try {
+      // ✅ ব্যাকএন্ড এখন ঠিক, তাই register ফাংশন কল করলেই নতুন OTP আসবে
+      await register(name, email, password);
+      toast.success('New OTP sent to your email!');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to resend OTP');
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md">
@@ -72,7 +86,7 @@ export default function Register() {
           <CardDescription className="body-small">
             {step === 'register'
               ? 'Enter your details to create your account'
-              : `Enter the OTP sent to ${email}`} {/* ✅ Email-ti ekhane dekhano holo */}
+              : `Enter the OTP sent to ${email}`}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -127,6 +141,7 @@ export default function Register() {
               </Button>
             </form>
           ) : (
+            // ✅ পরিবর্তন: ভেরিফাই ফর্ম
             <form onSubmit={handleVerifyOtp} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="otp">OTP Code</Label>
@@ -142,17 +157,30 @@ export default function Register() {
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? 'Verifying...' : 'Verify OTP'}
               </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full"
-                onClick={() => {
-                  setStep('register');
-                  navigate('/register', { replace: true, state: {} }); // ✅ State clear kora holo
-                }}
-              >
-                Back to registration
-              </Button>
+
+              {/* ✅ নতুন বাটন গ্রুপ */}
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full"
+                  onClick={() => {
+                    setStep('register');
+                    navigate('/register', { replace: true, state: {} }); // State clear করা হলো
+                  }}
+                >
+                  Back
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleResendOtp}
+                  disabled={isResending}
+                >
+                  {isResending ? 'Sending...' : 'Resend OTP'}
+                </Button>
+              </div>
             </form>
           )}
 
