@@ -99,6 +99,15 @@ export default function MedicineCard({ medicine }: MedicineCardProps) {
           )}
         </div>
 
+        {/* ✅ Category Badge Added Here */}
+        {medicine.category && (
+          <div className="mb-2">
+            <Badge variant="secondary" className="text-xs font-normal">
+              {medicine.category}
+            </Badge>
+          </div>
+        )}
+
         {/* Name + Description */}
         <h3 className="label-text mb-1 line-clamp-2">{medicine.name}</h3>
         <p className="body-small text-muted-foreground mb-2 line-clamp-2">
