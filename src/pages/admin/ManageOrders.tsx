@@ -1,19 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -35,50 +26,33 @@ export default function ManageOrders() {
     }
   };
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+  useEffect(() => { fetchOrders(); }, []);
 
   const handleStatusChange = async (orderId: string, status: string) => {
     try {
       await api.put(`/admin/orders/${orderId}`, { status });
       toast.success('Order status updated');
-      fetchOrders(); // তালিকা রিফ্রেশ করুন
+      fetchOrders();
     } catch (error) {
       toast.error('Failed to update order status');
     }
   };
 
-  // ✅ ব্যাজের রঙ আপডেট করা হলো
-  const getStatusColor = (status: string) => {
+  const getOrderColor = (status: string) => {
     switch (status) {
-      case 'Paid':
-      case 'COD':
-        return 'bg-blue-500 text-white'; // অর্ডার কনফার্মড
-      case 'Processing':
-        return 'bg-purple-500 text-white'; // প্রসেসিং
-      case 'Shipped':
-        return 'bg-orange-500 text-white'; // পাঠানো হয়েছে
-      case 'Delivered':
-        return 'bg-green-600 text-white'; // ডেলিভারি সম্পন্ন
-      case 'Pending':
-        return 'bg-yellow-500 text-white'; // পেমেন্ট পেন্ডিং
-      case 'Cancelled':
-      case 'Failed':
-        return 'bg-destructive text-white'; // বাতিল বা ফেইলড
-      default:
-        return 'bg-muted';
+      case 'Processing': return 'bg-blue-500';
+      case 'Shipped': return 'bg-orange-500';
+      case 'Delivered': return 'bg-green-600';
+      case 'Cancelled': return 'bg-destructive';
+      default: return 'bg-muted';
     }
   };
 
-  if (isLoading) {
-    // ... (লোডিং কোড অপরিবর্তিত) ...
-  }
+  if (isLoading) return <div>Loading...</div>;
 
   return (
     <div className="space-y-6">
       <h1 className="heading-1">Manage Orders</h1>
-
       <div className="bg-white rounded-lg border">
         <Table>
           <TableHeader>
@@ -86,10 +60,9 @@ export default function ManageOrders() {
               <TableHead>Customer</TableHead>
               <TableHead>Medicine</TableHead>
               <TableHead>Amount</TableHead>
-              <TableHead>Payment</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Pay Status</TableHead> {/* ✅ */}
+              <TableHead>Order Status</TableHead> {/* ✅ */}
               <TableHead>Date</TableHead>
-              <TableHead>Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -101,39 +74,42 @@ export default function ManageOrders() {
                 <TableRow key={order._id}>
                   <TableCell>
                     <div>
-                      <p className="font-medium">{user ? user.name : 'Deleted User'}</p>
-                      <p className="text-sm text-muted-foreground">{user ? user.email : 'N/A'}</p>
+                      <p className="font-medium">{user ? user.name : 'N/A'}</p>
+                      <p className="text-xs text-muted-foreground">{user ? user.email : ''}</p>
                     </div>
                   </TableCell>
                   
-                  <TableCell>{medicine ? medicine.name : 'Deleted Medicine'}</TableCell>
+                  <TableCell>{medicine ? medicine.name : 'N/A'}</TableCell>
                   <TableCell>{formatPrice(order.priceAtOrder * order.quantity)}</TableCell>
-                  <TableCell>{order.paymentMethod}</TableCell>
+                  
+                  {/* ✅ পেমেন্ট স্ট্যাটাস (Read-only) */}
                   <TableCell>
-                    <Badge className={getStatusColor(order.status)}>{order.status}</Badge>
+                    <Badge variant={order.paymentStatus === 'Paid' ? 'default' : 'secondary'}>
+                      {order.paymentStatus}
+                    </Badge>
+                    <div className="text-xs text-muted-foreground mt-1">{order.paymentMethod}</div>
                   </TableCell>
-                  <TableCell>{formatDate(order.createdAt)}</TableCell>
+
+                  {/* ✅ অর্ডার স্ট্যাটাস (Changeable) */}
                   <TableCell>
-                    {/* ✅ সিলেক্ট অপশন আপডেট করা হলো */}
                     <Select
-                      value={order.status}
-                      onValueChange={(value: string) => handleStatusChange(order._id, value)}
+                      value={order.orderStatus}
+                      onValueChange={(val) => handleStatusChange(order._id, val)}
                     >
-                      <SelectTrigger className="w-36">
+                      <SelectTrigger className={`w-32 text-white ${getOrderColor(order.orderStatus)}`}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Pending">Pending</SelectItem>
-                        <SelectItem value="Paid">Paid</SelectItem>
-                        <SelectItem value="COD">COD</SelectItem>
                         <SelectItem value="Processing">Processing</SelectItem>
                         <SelectItem value="Shipped">Shipped</SelectItem>
                         <SelectItem value="Delivered">Delivered</SelectItem>
                         <SelectItem value="Cancelled">Cancelled</SelectItem>
-                        <SelectItem value="Failed">Failed</SelectItem>
                       </SelectContent>
                     </Select>
                   </TableCell>
+
+                  <TableCell>{formatDate(order.createdAt)}</TableCell>
                 </TableRow>
               );
             })}

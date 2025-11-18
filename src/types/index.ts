@@ -1,6 +1,5 @@
-// ✅ ১. নতুন Address টাইপ (যাতে _id থাকে)
 export interface Address {
-  _id: string; // MongoDB sub-document ID
+  _id: string;
   street: string;
   city: string;
   postalCode: string;
@@ -25,7 +24,7 @@ export interface User {
   email: string;
   role: 'USER' | 'ADMIN';
   isVerified: boolean;
-  addresses: Address[]; // ✅ ২. User টাইপ আপডেট করা হলো
+  addresses: Address[];
 }
 
 export interface Order {
@@ -36,9 +35,9 @@ export interface Order {
   priceAtOrder: number;
   paymentMethod: 'COD' | 'ONLINE';
   
-  // ✅ ফ্রন্টএন্ড টাইপ-এ নতুন স্ট্যাটাসগুলো যোগ করা হলো
-  status: 'Pending' | 'Paid' | 'COD' | 'Failed' | 
-          'Processing' | 'Shipped' | 'Delivered' | 'Cancelled'; 
+  // ✅ আলাদা ফিল্ড
+  orderStatus: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
+  paymentStatus: 'Pending' | 'Paid' | 'Failed';
           
   paymentId?: string;
   address: {
@@ -49,6 +48,7 @@ export interface Order {
   };
   createdAt: string;
 }
+
 export interface DashboardStats {
   totalUsers: number;
   totalOrders: number;
