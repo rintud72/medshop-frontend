@@ -43,7 +43,10 @@ export function useMedicine(id: string) {
         setIsLoading(true);
         setError(null);
         const response = await api.get(`/medicines/${id}`);
-        setMedicine(response.data.medicine);
+        
+        // ✅ Fix: 'response.data.medicine' er bodole 'response.data' hobe
+        setMedicine(response.data); 
+        
       } catch (err) {
         setError('Failed to fetch medicine details');
         console.error(err);
