@@ -44,8 +44,9 @@ export function useMedicine(id: string) {
         setError(null);
         const response = await api.get(`/medicines/${id}`);
         
-        // ✅ Fix: 'response.data.medicine' er bodole 'response.data' hobe
-        setMedicine(response.data); 
+        // ✅ ফিক্স: এটি এখন সেফলি চেক করবে। 
+        // যদি ব্যাকএন্ড 'medicine' অবজেক্টের ভেতরে পাঠায় অথবা সরাসরি পাঠায়, দুটোই কাজ করবে।
+        setMedicine(response.data.medicine || response.data);
         
       } catch (err) {
         setError('Failed to fetch medicine details');
