@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+// ✅ Eye icon import kora holo
+import { Plus, Edit, Trash2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,16 +28,17 @@ import type { Medicine } from '@/types';
 export default function ManageMedicines() {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Edit/Add States
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingMedicine, setEditingMedicine] = useState<Medicine | null>(null);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    stock: '',
-    category: '',
-    image: null as File | null
+    name: '', description: '', price: '', stock: '', category: '', image: null as File | null
   });
+
+  // ✅ View Details States
+  const [viewingMedicine, setViewingMedicine] = useState<Medicine | null>(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
 
   const fetchMedicines = async () => {
     try {
@@ -110,15 +112,16 @@ export default function ManageMedicines() {
     setIsDialogOpen(true);
   };
 
+  // ✅ View Handler
+  const handleView = (medicine: Medicine) => {
+    setViewingMedicine(medicine);
+    setIsViewOpen(true);
+  };
+
   const resetForm = () => {
     setEditingMedicine(null);
     setFormData({
-      name: '',
-      description: '',
-      price: '',
-      stock: '',
-      category: '',
-      image: null
+      name: '', description: '', price: '', stock: '', category: '', image: null
     });
   };
 
@@ -144,67 +147,64 @@ export default function ManageMedicines() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Medicine Name</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                  />
+                  <Input id="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
-                  <Input
-                    id="category"
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    required
-                  />
+                  <Input id="category" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} required />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  required
-                />
+                <Textarea id="description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} required />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="price">Price (₹)</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    required
-                  />
+                  <Input id="price" type="number" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="stock">Stock</Label>
-                  <Input
-                    id="stock"
-                    type="number"
-                    value={formData.stock}
-                    onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                    required
-                  />
+                  <Input id="stock" type="number" value={formData.stock} onChange={(e) => setFormData({ ...formData, stock: e.target.value })} required />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="image">Image</Label>
-                <Input
-                  id="image"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setFormData({ ...formData, image: e.target.files?.[0] || null })}
-                />
+                <Input id="image" type="file" accept="image/*" onChange={(e) => setFormData({ ...formData, image: e.target.files?.[0] || null })} />
               </div>
               <Button type="submit" className="w-full">
                 {editingMedicine ? 'Update Medicine' : 'Add Medicine'}
               </Button>
             </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* ✅ View Details Dialog Added */}
+        <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Medicine Details</DialogTitle>
+            </DialogHeader>
+            {viewingMedicine && (
+              <div className="space-y-4">
+                <div className="aspect-video bg-slate-50 rounded-lg flex items-center justify-center overflow-hidden border">
+                  {viewingMedicine.image ? (
+                    <img src={viewingMedicine.image} alt={viewingMedicine.name} className="h-full object-contain" />
+                  ) : (
+                    <span className="text-muted-foreground">No Image</span>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">{viewingMedicine.name}</h3>
+                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">{viewingMedicine.category}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div><p className="text-muted-foreground">Price</p><p className="font-semibold">{formatPrice(viewingMedicine.price)}</p></div>
+                  <div><p className="text-muted-foreground">Stock</p><p className="font-semibold">{viewingMedicine.stock} units</p></div>
+                </div>
+                <div><p className="text-muted-foreground mb-1">Description</p><p className="text-sm bg-muted p-3 rounded-md">{viewingMedicine.description}</p></div>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
@@ -235,18 +235,16 @@ export default function ManageMedicines() {
                   <TableCell>{medicine.stock}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(medicine)}
-                      >
+                      
+                      {/* ✅ View Button Added */}
+                      <Button variant="ghost" size="icon" onClick={() => handleView(medicine)}>
+                        <Eye className="h-4 w-4 text-blue-500" />
+                      </Button>
+
+                      <Button variant="ghost" size="icon" onClick={() => handleEdit(medicine)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(medicine._id)}
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(medicine._id)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>

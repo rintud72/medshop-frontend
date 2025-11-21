@@ -17,7 +17,7 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Orders from './pages/Orders';
 import Profile from './pages/Profile';
-
+import MedicineDetails from './pages/MedicineDetails';
 // Admin Pages
 import Dashboard from './pages/admin/Dashboard';
 import ManageMedicines from './pages/admin/ManageMedicines';
@@ -51,6 +51,7 @@ export const router = createBrowserRouter([
       { path: 'medicines', element: <Medicines /> },
       { path: 'login', element: <Login /> },
       { path: 'register', element: <Register /> },
+      { path: 'medicines/:id', element: <MedicineDetails /> },
       {
         path: 'cart',
         element: (

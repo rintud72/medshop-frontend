@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingCart, Package } from 'lucide-react';
+// ✅ Eye icon import kora holo
+import { ShoppingCart, Package, Eye } from 'lucide-react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,19 +16,11 @@ interface MedicineCardProps {
 }
 
 export default function MedicineCard({ medicine }: MedicineCardProps) {
-  // Tracks loading state when adding to cart
   const [isAdding, setIsAdding] = useState(false);
+  const { addToCart } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-  const { addToCart } = useCart();   // Cart context function
-  const { user } = useAuth();        // Auth context
-  const navigate = useNavigate();    // Navigation hook
-
-  /**
-   * Handle Add-To-Cart Button
-   * - Redirects unauthenticated users to login
-   * - Validates stock availability
-   * - Adds item to cart using context function
-   */
   const handleAddToCart = async () => {
     if (!user) {
       toast.error('Please login to add items to cart');
@@ -52,20 +45,19 @@ export default function MedicineCard({ medicine }: MedicineCardProps) {
     }
   };
 
-  /**
-   * Image URL Logic
-   * - If image is already a full link, use it
-   * - Otherwise fallback to local/image path
-   */
+  // ✅ View Details Handler
+  const handleViewDetails = () => {
+    navigate(`/medicines/${medicine._id}`);
+  };
+
   const imageUrl = medicine.image?.startsWith('http')
     ? medicine.image
     : `${medicine.image}`;
 
   return (
-    <Card className="group hover:shadow-lg transition-shadow duration-300">
-      <CardContent className="p-4">
+    <Card className="group hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
+      <CardContent className="p-4 flex-1 cursor-pointer" onClick={handleViewDetails}>
         
-        {/* Medicine Image Section */}
         <div className="aspect-square rounded-lg bg-slate-100 mb-4 overflow-hidden relative">
           {medicine.image ? (
             <img
@@ -74,18 +66,15 @@ export default function MedicineCard({ medicine }: MedicineCardProps) {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                // Fallback Image for Invalid URLs
                 target.src = 'https://placehold.co/300x300?text=Medicine';
               }}
             />
           ) : (
-            // Default Placeholder when no image provided
             <div className="w-full h-full flex items-center justify-center">
               <Package className="h-16 w-16 text-muted-foreground" />
             </div>
           )}
 
-          {/* Stock Badges */}
           {medicine.stock === 0 && (
             <Badge className="absolute top-2 right-2 bg-destructive">
               Out of Stock
@@ -99,7 +88,6 @@ export default function MedicineCard({ medicine }: MedicineCardProps) {
           )}
         </div>
 
-        {/* ✅ Category Badge Added Here */}
         {medicine.category && (
           <div className="mb-2">
             <Badge variant="secondary" className="text-xs font-normal">
@@ -108,14 +96,12 @@ export default function MedicineCard({ medicine }: MedicineCardProps) {
           </div>
         )}
 
-        {/* Name + Description */}
-        <h3 className="label-text mb-1 line-clamp-2">{medicine.name}</h3>
+        <h3 className="label-text mb-1 line-clamp-2 group-hover:text-primary transition-colors">{medicine.name}</h3>
         <p className="body-small text-muted-foreground mb-2 line-clamp-2">
           {medicine.description}
         </p>
 
-        {/* Price + Stock */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mt-auto">
           <span className="heading-3 text-primary">
             {formatPrice(medicine.price)}
           </span>
@@ -125,21 +111,26 @@ export default function MedicineCard({ medicine }: MedicineCardProps) {
         </div>
       </CardContent>
 
-      {/* Add to Cart Button */}
-      <CardFooter className="p-4 pt-0">
+      <CardFooter className="p-4 pt-0 gap-2">
+        
+        {/* ✅ View Button Added */}
+        <Button 
+          variant="outline" 
+          size="icon" 
+          onClick={handleViewDetails}
+          title="View Details"
+          className="shrink-0"
+        >
+          <Eye className="h-4 w-4" />
+        </Button>
+
         <Button
-          className="w-full gap-2"
+          className="flex-1 gap-2"
           onClick={handleAddToCart}
           disabled={isAdding || medicine.stock === 0}
         >
           <ShoppingCart className="h-4 w-4" />
-          
-          {/* Button label based on state */}
-          {isAdding
-            ? 'Adding...'
-            : medicine.stock === 0
-            ? 'Out of Stock'
-            : 'Add to Cart'}
+          {isAdding ? 'Adding...' : 'Add to Cart'}
         </Button>
       </CardFooter>
     </Card>
