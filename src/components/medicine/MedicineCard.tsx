@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// ✅ Eye icon import kora holo
-import { ShoppingCart, Package, Eye } from 'lucide-react';
+// ✅ Heart icon import kora holo
+import { ShoppingCart, Package, Eye, Heart } from 'lucide-react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatPrice } from '@/lib/utils';
 import { toast } from 'sonner';
+import api from '@/lib/api'; // ✅ API import
 import type { Medicine } from '@/types';
 
 interface MedicineCardProps {
@@ -17,6 +18,9 @@ interface MedicineCardProps {
 
 export default function MedicineCard({ medicine }: MedicineCardProps) {
   const [isAdding, setIsAdding] = useState(false);
+  // ✅ Local state for wishlist visual toggle
+  const [isInWishlist, setIsInWishlist] = useState(false); 
+  
   const { addToCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -45,7 +49,24 @@ export default function MedicineCard({ medicine }: MedicineCardProps) {
     }
   };
 
-  // ✅ View Details Handler
+  // ✅ Wishlist Toggle Handler
+  const handleToggleWishlist = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // কার্ডে ক্লিক করলে যাতে ডিটেইলস পেজে না যায়
+    if (!user) {
+      toast.error('Please login to use wishlist');
+      return;
+    }
+
+    try {
+      await api.post('/users/wishlist/toggle', { medicineId: medicine._id });
+      setIsInWishlist(!isInWishlist); // UI আপডেট
+      toast.success(isInWishlist ? 'Removed from wishlist' : 'Added to wishlist');
+    } catch (error) {
+      toast.error('Failed to update wishlist');
+    }
+  };
+
+  // View Details Handler
   const handleViewDetails = () => {
     navigate(`/medicines/${medicine._id}`);
   };
@@ -55,7 +76,19 @@ export default function MedicineCard({ medicine }: MedicineCardProps) {
     : `${medicine.image}`;
 
   return (
-    <Card className="group hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
+    <Card className="group hover:shadow-lg transition-shadow duration-300 flex flex-col h-full relative">
+      
+      {/* ✅ Wishlist Button (Absolute Positioned) */}
+      <button
+        onClick={handleToggleWishlist}
+        className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/80 hover:bg-white shadow-sm transition-colors"
+        title="Add to Wishlist"
+      >
+        <Heart 
+          className={`h-5 w-5 ${isInWishlist ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} 
+        />
+      </button>
+
       <CardContent className="p-4 flex-1 cursor-pointer" onClick={handleViewDetails}>
         
         <div className="aspect-square rounded-lg bg-slate-100 mb-4 overflow-hidden relative">
@@ -76,13 +109,13 @@ export default function MedicineCard({ medicine }: MedicineCardProps) {
           )}
 
           {medicine.stock === 0 && (
-            <Badge className="absolute top-2 right-2 bg-destructive">
+            <Badge className="absolute top-2 left-2 bg-destructive">
               Out of Stock
             </Badge>
           )}
 
           {medicine.stock > 0 && medicine.stock < 10 && (
-            <Badge className="absolute top-2 right-2 bg-accent">
+            <Badge className="absolute top-2 left-2 bg-accent">
               Low Stock
             </Badge>
           )}
@@ -113,7 +146,6 @@ export default function MedicineCard({ medicine }: MedicineCardProps) {
 
       <CardFooter className="p-4 pt-0 gap-2">
         
-        {/* ✅ View Button Added */}
         <Button 
           variant="outline" 
           size="icon" 

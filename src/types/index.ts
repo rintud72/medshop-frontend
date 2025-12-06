@@ -17,6 +17,7 @@ export interface Medicine {
   image: string;
   createdAt: string;
   updatedAt: string;
+  
 }
 
 export interface User {
@@ -25,7 +26,8 @@ export interface User {
   email: string;
   role: 'USER' | 'ADMIN';
   isVerified: boolean;
-  addresses: Address[]; // ✅ ২. User টাইপ আপডেট করা হলো
+  addresses: Address[]; 
+  wishlist: string[];
 }
 
 export interface Order {

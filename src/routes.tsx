@@ -18,6 +18,9 @@ import Checkout from './pages/Checkout';
 import Orders from './pages/Orders';
 import Profile from './pages/Profile';
 import MedicineDetails from './pages/MedicineDetails';
+// ✅ Wishlist page import kora holo
+import Wishlist from './pages/Wishlist'; 
+
 // Admin Pages
 import Dashboard from './pages/admin/Dashboard';
 import ManageMedicines from './pages/admin/ManageMedicines';
@@ -81,6 +84,15 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Profile />
+          </ProtectedRoute>
+        )
+      },
+      // ✅ Wishlist route add kora holo (Protected)
+      {
+        path: 'wishlist',
+        element: (
+          <ProtectedRoute>
+            <Wishlist />
           </ProtectedRoute>
         )
       }
