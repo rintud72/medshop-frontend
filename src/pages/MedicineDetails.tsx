@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useState } from 'react';
+// ✅ Reviews Component Import
+import Reviews from '@/components/medicine/Reviews'; 
 
 export default function MedicineDetails() {
   const { id } = useParams();
@@ -46,7 +48,7 @@ export default function MedicineDetails() {
         <ArrowLeft className="h-4 w-4" /> Back
       </Button>
 
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden mb-8">
         <CardContent className="p-0">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Image Section */}
@@ -109,6 +111,10 @@ export default function MedicineDetails() {
           </div>
         </CardContent>
       </Card>
+
+      {/* ✅ Reviews Section Added */}
+      <Reviews medicineId={medicine._id} />
+      
     </div>
   );
 }
