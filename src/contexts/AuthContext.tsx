@@ -1,13 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import api from '@/lib/api';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'USER' | 'ADMIN';
-  isVerified: boolean;
-}
+import type { User } from '@/types';
 
 interface AuthContextType {
   user: User | null;
@@ -16,6 +9,7 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<void>;
   verifyOtp: (email: string, otp: string) => Promise<void>;
   logout: () => void;
+  updateUser: (userData: User) => void; // ✅ এই ফাংশনটি যোগ করা হয়েছে
   isLoading: boolean;
 }
 
@@ -37,6 +31,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
+  // ✅ নতুন updateUser ফাংশন
+  const updateUser = (userData: User) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
   const login = async (email: string, password: string) => {
     const response = await api.post('/users/login', { email, password });
     const { token: newToken, user: newUser } = response.data;
@@ -53,12 +53,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const verifyOtp = async (email: string, otp: string) => {
      await api.post('/users/verify-otp', { email, otp });
-    // const { token: newToken, user: newUser } = response.data;
-    
-    // localStorage.setItem('token', newToken);
-    // localStorage.setItem('user', JSON.stringify(newUser));
-    // setToken(newToken);
-    // setUser(newUser);
   };
 
   const logout = () => {
@@ -69,7 +63,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, verifyOtp, logout, isLoading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      token, 
+      login, 
+      register, 
+      verifyOtp, 
+      logout, 
+      updateUser, // ✅ প্রভাইডারে পাস করা হলো
+      isLoading 
+    }}>
       {children}
     </AuthContext.Provider>
   );
