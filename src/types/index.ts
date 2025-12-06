@@ -17,7 +17,6 @@ export interface Medicine {
   image: string;
   createdAt: string;
   updatedAt: string;
-  
 }
 
 export interface User {
@@ -26,7 +25,7 @@ export interface User {
   email: string;
   role: 'USER' | 'ADMIN';
   isVerified: boolean;
-  addresses: Address[]; 
+  addresses: Address[];
   wishlist: string[];
 }
 
@@ -43,6 +42,10 @@ export interface Order {
           'Processing' | 'Shipped' | 'Delivered' | 'Cancelled'; 
           
   paymentId?: string;
+  
+  // ✅ নতুন: Prescription ফিল্ড
+  prescription?: string;
+
   address: {
     street: string;
     city: string;
@@ -51,6 +54,7 @@ export interface Order {
   };
   createdAt: string;
 }
+
 export interface DashboardStats {
   totalUsers: number;
   totalOrders: number;
@@ -64,6 +68,7 @@ export interface DashboardStats {
   }>;
 }
 
+// ✅ Review Interface (যদি আগে না থাকে)
 export interface Review {
   _id: string;
   medicineId: string;

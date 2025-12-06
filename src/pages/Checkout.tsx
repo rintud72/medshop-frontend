@@ -1,5 +1,3 @@
-// ফাইল: src/pages/Checkout.tsx
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
@@ -7,13 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'; // ✅ Dialog ইম্পোর্ট
-import { Plus } from 'lucide-react'; // ✅ Plus আইকন ইম্পোর্ট
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Plus, Upload } from 'lucide-react'; // ✅ Upload আইকন ইম্পোর্ট
 import { formatPrice } from '@/lib/utils';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 import type { Address } from '@/types'; 
-import { AddressForm } from '@/components/AddressForm'; // ✅ নতুন ফর্ম ইম্পোর্ট
+import { AddressForm } from '@/components/AddressForm';
 
 export default function Checkout() {
   const { cartItems, clearCart, refreshCart } = useCart();
@@ -24,7 +22,10 @@ export default function Checkout() {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [isAddressLoading, setIsAddressLoading] = useState(true);
-  const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false); // ✅ Dialog স্টেট
+  const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false);
+  
+  // ✅ প্রেসক্রিপশন স্টেপ
+  const [prescriptionFile, setPrescriptionFile] = useState<File | null>(null);
 
   // সেভ করা অ্যাড্রেস ফেচ করা
   useEffect(() => {
@@ -50,7 +51,6 @@ export default function Checkout() {
   );
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    // ... (এই ফাংশনটি অপরিবর্তিত) ...
     e.preventDefault();
 
     if (!selectedAddressId) {
@@ -68,7 +68,19 @@ export default function Checkout() {
 
     try {
       if (paymentMethod === 'COD') {
-        await api.post('/cart/checkout', { address: selectedAddress }); 
+        // ✅ FormData ব্যবহার করা হচ্ছে ফাইল পাঠানোর জন্য
+        const formData = new FormData();
+        // Address কে স্ট্রিং হিসেবে পাঠাতে হবে কারণ FormData শুধু টেক্সট বা ফাইল নেয়
+        formData.append('address', JSON.stringify(selectedAddress));
+        
+        if (prescriptionFile) {
+          formData.append('prescription', prescriptionFile);
+        }
+
+        await api.post('/cart/checkout', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        }); 
+        
         toast.success('Order placed successfully!');
         clearCart();
         navigate('/orders');
@@ -139,7 +151,6 @@ export default function Checkout() {
             
             <Card>
               <CardHeader>
-                {/* ✅ "Add New" বাটন যোগ করা হলো */}
                 <div className="flex items-center justify-between">
                   <CardTitle>Shipping Address</CardTitle>
                   <Dialog open={isAddressDialogOpen} onOpenChange={setIsAddressDialogOpen}>
@@ -154,9 +165,9 @@ export default function Checkout() {
                         <DialogTitle>Add New Address</DialogTitle>
                       </DialogHeader>
                       <AddressForm onSave={(newAddress) => {
-                        setAddresses([...addresses, newAddress]); // নতুন অ্যাড্রেস লিস্টে যোগ করা
-                        setSelectedAddressId(newAddress._id); // নতুন অ্যাড্রেসটি সিলেক্ট করা
-                        setIsAddressDialogOpen(false); // ডায়ালগ বন্ধ করা
+                        setAddresses([...addresses, newAddress]);
+                        setSelectedAddressId(newAddress._id);
+                        setIsAddressDialogOpen(false);
                       }} />
                     </DialogContent>
                   </Dialog>
@@ -189,12 +200,38 @@ export default function Checkout() {
               </CardContent>
             </Card>
 
+            {/* ✅ Prescription Upload Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Prescription (Optional)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="border-2 border-dashed rounded-lg p-6 text-center hover:bg-slate-50 transition-colors">
+                  <input
+                    type="file"
+                    id="prescription"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={(e) => setPrescriptionFile(e.target.files?.[0] || null)}
+                  />
+                  <Label htmlFor="prescription" className="cursor-pointer flex flex-col items-center gap-2">
+                    <Upload className="h-8 w-8 text-muted-foreground" />
+                    <span className="text-sm font-medium text-primary">
+                      {prescriptionFile ? prescriptionFile.name : 'Upload Prescription Image'}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      Click to upload if required for your medicines
+                    </span>
+                  </Label>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>Payment Method</CardTitle>
               </CardHeader>
               <CardContent>
-                {/* ... (পেমেন্ট মেথড অপরিবর্তিত) ... */}
                 <RadioGroup value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as 'COD' | 'ONLINE')}>
                   <div className="flex items-center space-x-2 p-4 border rounded-lg">
                     <RadioGroupItem value="COD" id="cod" />
@@ -225,7 +262,6 @@ export default function Checkout() {
         </div>
 
         <div>
-          {/* ... (অর্ডার সামারি কার্ড অপরিবর্তিত) ... */}
           <Card className="sticky top-20">
             <CardHeader>
               <CardTitle>Order Summary</CardTitle>

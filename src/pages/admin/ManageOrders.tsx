@@ -19,6 +19,8 @@ import { formatPrice, formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 import type { Order, User, Medicine } from '@/types';
+// ✅ FileText আইকন ইম্পোর্ট
+import { FileText } from 'lucide-react';
 
 export default function ManageOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -43,36 +45,40 @@ export default function ManageOrders() {
     try {
       await api.put(`/admin/orders/${orderId}`, { status });
       toast.success('Order status updated');
-      fetchOrders(); // তালিকা রিফ্রেশ করুন
+      fetchOrders();
     } catch (error) {
       toast.error('Failed to update order status');
     }
   };
 
-  // ✅ ব্যাজের রঙ আপডেট করা হলো
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Paid':
       case 'COD':
-        return 'bg-blue-500 text-white'; // অর্ডার কনফার্মড
+        return 'bg-blue-500 text-white';
       case 'Processing':
-        return 'bg-purple-500 text-white'; // প্রসেসিং
+        return 'bg-purple-500 text-white';
       case 'Shipped':
-        return 'bg-orange-500 text-white'; // পাঠানো হয়েছে
+        return 'bg-orange-500 text-white';
       case 'Delivered':
-        return 'bg-green-600 text-white'; // ডেলিভারি সম্পন্ন
+        return 'bg-green-600 text-white';
       case 'Pending':
-        return 'bg-yellow-500 text-white'; // পেমেন্ট পেন্ডিং
+        return 'bg-yellow-500 text-white';
       case 'Cancelled':
       case 'Failed':
-        return 'bg-destructive text-white'; // বাতিল বা ফেইলড
+        return 'bg-destructive text-white';
       default:
         return 'bg-muted';
     }
   };
 
   if (isLoading) {
-    // ... (লোডিং কোড অপরিবর্তিত) ...
+    return (
+      <div className="space-y-6">
+        <h1 className="heading-1">Manage Orders</h1>
+        <div className="animate-pulse h-64 bg-muted rounded"></div>
+      </div>
+    );
   }
 
   return (
@@ -85,6 +91,8 @@ export default function ManageOrders() {
             <TableRow>
               <TableHead>Customer</TableHead>
               <TableHead>Medicine</TableHead>
+              {/* ✅ Prescription Column Added */}
+              <TableHead>Prescription</TableHead>
               <TableHead>Amount</TableHead>
               <TableHead>Payment</TableHead>
               <TableHead>Status</TableHead>
@@ -107,6 +115,23 @@ export default function ManageOrders() {
                   </TableCell>
                   
                   <TableCell>{medicine ? medicine.name : 'Deleted Medicine'}</TableCell>
+                  
+                  {/* ✅ Prescription View Link */}
+                  <TableCell>
+                    {order.prescription ? (
+                      <a 
+                        href={order.prescription} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-blue-600 hover:underline text-sm font-medium"
+                      >
+                        <FileText className="h-4 w-4" /> View
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">None</span>
+                    )}
+                  </TableCell>
+
                   <TableCell>{formatPrice(order.priceAtOrder * order.quantity)}</TableCell>
                   <TableCell>{order.paymentMethod}</TableCell>
                   <TableCell>
@@ -114,7 +139,6 @@ export default function ManageOrders() {
                   </TableCell>
                   <TableCell>{formatDate(order.createdAt)}</TableCell>
                   <TableCell>
-                    {/* ✅ সিলেক্ট অপশন আপডেট করা হলো */}
                     <Select
                       value={order.status}
                       onValueChange={(value: string) => handleStatusChange(order._id, value)}
