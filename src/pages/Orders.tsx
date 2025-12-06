@@ -1,33 +1,102 @@
 import { useOrders } from '@/hooks/useOrders';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext'; // ✅ ইউজার ইনফোর জন্য
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button'; // ✅ বাটন ইম্পোর্ট
 import { Badge } from '@/components/ui/badge';
-import { Package } from 'lucide-react';
+import { Package, Download } from 'lucide-react'; // ✅ Download আইকন
 import { formatPrice, formatDate } from '@/lib/utils';
 import type { Medicine } from '@/types';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function Orders() {
   const { orders, isLoading } = useOrders();
+  const { user } = useAuth(); // ✅ বর্তমান ইউজার
 
-  // ✅ সমাধান: ব্যাজের রঙ অ্যাডমিন প্যানেলের সাথে মিলিয়ে আপডেট করা হলো
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Paid':
       case 'COD':
-        return 'bg-blue-500 text-white'; // অর্ডার কনফার্মড
+        return 'bg-blue-500 text-white';
       case 'Processing':
-        return 'bg-purple-500 text-white'; // প্রসেসিং
+        return 'bg-purple-500 text-white';
       case 'Shipped':
-        return 'bg-orange-500 text-white'; // পাঠানো হয়েছে
+        return 'bg-orange-500 text-white';
       case 'Delivered':
-        return 'bg-green-600 text-white'; // ডেলিভারি সম্পন্ন
+        return 'bg-green-600 text-white';
       case 'Pending':
-        return 'bg-yellow-500 text-white'; // পেমেন্ট পেন্ডিং
+        return 'bg-yellow-500 text-white';
       case 'Cancelled':
       case 'Failed':
-        return 'bg-destructive text-white'; // বাতিল বা ফেইলড
+        return 'bg-destructive text-white';
       default:
         return 'bg-muted';
     }
+  };
+
+  // ✅ ইনভয়েস জেনারেট করার ফাংশন
+  const handleDownloadInvoice = (order: any) => {
+    const doc = new jsPDF();
+    const medicine = order.medicineId;
+
+    // --- Header ---
+    doc.setFontSize(20);
+    doc.text('MedShop', 14, 22);
+    doc.setFontSize(10);
+    doc.text('Your Trusted Online Pharmacy', 14, 28);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 34);
+
+    // --- Invoice Info ---
+    doc.setFontSize(12);
+    doc.text(`Invoice #${order._id.slice(-6).toUpperCase()}`, 140, 22);
+    doc.setFontSize(10);
+    doc.text(`Order ID: ${order._id}`, 140, 28);
+    doc.text(`Status: ${order.status}`, 140, 34);
+
+    // --- Customer Details ---
+    doc.line(14, 40, 196, 40); // Horizontal Line
+    doc.text('Bill To:', 14, 50);
+    doc.setFont('helvetica', 'bold');
+    doc.text(user?.name || 'Customer', 14, 55);
+    doc.setFont('helvetica', 'normal');
+    doc.text(user?.email || '', 14, 60);
+    
+    if (order.address) {
+      doc.text(`${order.address.street}, ${order.address.city}`, 14, 65);
+      doc.text(`Phone: ${order.address.phone}`, 14, 70);
+    }
+
+    // --- Order Table ---
+    autoTable(doc, {
+      startY: 80,
+      head: [['Item', 'Quantity', 'Price', 'Total']],
+      body: [
+        [
+          medicine?.name || 'Medicine',
+          order.quantity,
+          `Rs. ${order.priceAtOrder}`,
+          `Rs. ${order.priceAtOrder * order.quantity}`
+        ]
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: [14, 165, 233] } // Primary Color
+    });
+
+    // --- Total Amount ---
+    // @ts-ignore (autoTable creates finalY)
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Grand Total: Rs. ${order.priceAtOrder * order.quantity}`, 140, finalY);
+
+    // --- Footer ---
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Thank you for shopping with MedShop!', 14, finalY + 20);
+    doc.text('Contact: support@medshop.com', 14, finalY + 25);
+
+    // Save PDF
+    doc.save(`Invoice_${order._id}.pdf`);
   };
 
   if (isLoading) {
@@ -67,10 +136,8 @@ export default function Orders() {
 
       <div className="space-y-4">
         {orders.map((order) => {
-          // ✅ medicine ভেরিয়েবল এখন null হতে পারে
           const medicine = order.medicineId as Medicine | null; 
 
-          // ✅ (সমাধান) যদি মেডিসিন null হয় (ডিলিট হয়ে গিয়ে থাকলে), এই অর্ডারটি বাদ দাও
           if (!medicine) {
             return null; 
           }
@@ -80,13 +147,11 @@ export default function Orders() {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
-                    {/* ✅ এখন এটি নিরাপদ */}
                     <CardTitle className="heading-3">{medicine.name}</CardTitle>
                     <p className="body-small text-muted-foreground mt-1">
                       Order placed on {formatDate(order.createdAt)}
                     </p>
                   </div>
-                  {/* ✅ নতুন রঙের ফাংশন এখানে কাজ করবে */}
                   <Badge className={getStatusColor(order.status)}>{order.status}</Badge>
                 </div>
               </CardHeader>
@@ -116,6 +181,19 @@ export default function Orders() {
                   )}
                 </div>
               </CardContent>
+              
+              {/* ✅ Invoice Download Button */}
+              <CardFooter className="bg-slate-50 border-t flex justify-end p-4">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2"
+                  onClick={() => handleDownloadInvoice(order)}
+                >
+                  <Download className="h-4 w-4" />
+                  Download Invoice
+                </Button>
+              </CardFooter>
             </Card>
           );
         })}
